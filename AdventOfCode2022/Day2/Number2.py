@@ -42,7 +42,6 @@ def ChooseShape(Code):
                 me = 'A'
     else:
         me = Opponent
-    print(me)
     return me
 
 # Part 1
@@ -60,12 +59,13 @@ for line in Guide:
     TotalPoints += ShapePoints[me] + ResultPoints[result]
 
 print(TotalPoints)
-   
+
+Guide.close
+
 # Part 2
 # X is Lose, Y is Draw, and Z is Win
 
-# Status: Gir null....
-
+Guide = open("StrategyGuide.txt")
 TotalPoints = 0
 
 for line in Guide:
@@ -74,5 +74,6 @@ for line in Guide:
 
     me = ChooseShape(Code)
     TotalPoints += ShapePoints[me] + ResultPoints[ResultCodes[Code]]
+    #print(Code, Opponent, me)
 
 print(TotalPoints)
