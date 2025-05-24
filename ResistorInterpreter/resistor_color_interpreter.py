@@ -1,15 +1,6 @@
 def resistor_label(colors):
-    tolerance = {'grey': "0.05%",
-        'violet': "0.1%",
-        'blue': "0.25%",
-        'green': "0.5%",
-        'brown': "1%",
-        'red': "2%",
-        'gold': "5%",
-        'silver': "10%"
-    }
     if len(colors) == 1: return str(value(colors)) + ' ohms' 
-    return label(colors) + ' ±' + tolerance[colors[-1]]
+    return label(colors) + ' ±' + get_tolerance(colors[-1])
 
 
 def value(colors):
@@ -21,6 +12,17 @@ def value(colors):
 def get_colors():
     return ['black','brown','red','orange','yellow','green','blue','violet','grey','white']
 
+def get_tolerance(color):
+    tolerance = {'grey': "0.05%",
+        'violet': "0.1%",
+        'blue': "0.25%",
+        'green': "0.5%",
+        'brown': "1%",
+        'red': "2%",
+        'gold': "5%",
+        'silver': "10%"
+    }
+    return tolerance[color]
 
 def label(colors):
     unit = 'ohms'
@@ -56,3 +58,15 @@ def label(colors):
         numeric_value_string = numeric_value_string.rstrip('.0')
 
     return numeric_value_string  + prefix + unit
+
+
+
+user_input = input("Provide either a resistance value given in Ohms or a list of color bands: ")
+
+if user_input.isnumeric():
+    Ohm_value = int(user_input)
+    
+else:
+    colors = user_input.split(',')
+    print(resistor_label(colors))
+
