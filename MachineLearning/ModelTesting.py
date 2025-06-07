@@ -3,6 +3,8 @@ import tensorflow as tf
 import tensorflow_datasets as tfds
 import numpy as np
 import matplotlib as plt
+import pandas as pd
+import seaborn as sns
 
 """
 TODO:
@@ -12,3 +14,5 @@ TODO:
     - Make an appropriate model. Look at the documentation for the different options. Could start with Sequential...
     - Can I see how the model performs?
 """
+
+dataset = tfds.load('robomimic_ph',split='train',shuffle_files=True)
