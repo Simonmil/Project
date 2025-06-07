@@ -15,4 +15,8 @@ TODO:
     - Can I see how the model performs?
 """
 
-dataset = tfds.load('robomimic_ph',split='train',shuffle_files=True)
+# Make NumPy printouts easier to read.
+np.set_printoptions(precision=3, suppress=True)
+
+#url = 'https://archive.ics.uci.edu/dataset/360/air+quality/AirQualityUCI.csv'
+#url = 'https://archive.ics.uci.edu/dataset/186/wine+quality/winequality-white.cvs'
