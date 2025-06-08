@@ -41,5 +41,9 @@ test_dataset = dataset.drop(train_dataset.index)            # create a dataset f
 
 #sns.pairplot(train_dataset[['MPG', 'Cylinders', 'Displacement', 'Weight']], diag_kind='kde')
 #plt.show() # Required to see plots in Windows
+x = [1,2]
+y = [2,3]
 
+plt.plot(x,y)
+plt.show()
 print(train_dataset.describe().transpose())
