@@ -1,6 +1,6 @@
 This is the great cheat sheet for the machine learning.
 
-Dataset
+Dataset stuff
 
 
 Dataset manipulation:
@@ -22,7 +22,11 @@ Statitics:
 
 Vizualization:
 
+Remember to use plt.show() in programs where plotting is a thing. This sends the plot to x-server.
 
 
 
+Numpy:
 
+# Make NumPy printouts easier to read.
+np.set_printoptions(precision=3, suppress=True)
