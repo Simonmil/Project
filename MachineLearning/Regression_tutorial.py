@@ -39,11 +39,49 @@ test_dataset = dataset.drop(train_dataset.index)            # create a dataset f
 
 # Inspect the data
 
+#print(train_dataset.describe().transpose())
 #sns.pairplot(train_dataset[['MPG', 'Cylinders', 'Displacement', 'Weight']], diag_kind='kde')
 #plt.show() # Required to see plots in Windows
-x = [1,2]
-y = [2,3]
 
-plt.plot(x,y)
-plt.show()
-print(train_dataset.describe().transpose())
+# Splitting the label (target value) from the features
+
+# Make copies of the datasets that will contain the features
+train_features = train_dataset.copy()
+test_features = test_dataset.copy()
+
+train_labels = train_features.pop('MPG') # The pop function extracts and removes the values under MPG from the feature-datasets and puts them in a new variable
+test_labels = test_features.pop('MPG')
+
+# Normalize the features. Good practice to do this as it makes the training more stable.
+#print(train_dataset.describe().transpose()[['mean','std']]) # Easy way to see how different the means and standard deviations are.
+
+# Create the layer
+normalizer = tf.keras.layers.Normalization(axis=-1)
+
+normalizer.adapt(np.array(train_features))  # Fit to the data
+#print(normalizer.mean.numpy())              # Calculate the mean and variance of the data and store them in the layer
+"""
+# Testing the normalization
+first = np.array(train_features[:1]).astype(np.float32)
+with np.printoptions(precision=2, suppress=True):
+  print('First example:', first)
+  print()
+  print('Normalized:', normalizer(first).numpy())
+"""
+
+# Starting with some Linear regression using one and several variables.
+# Single-variable linear regression
+horsepower = np.array(train_features['Horsepower'])
+#test_horsepower = test_features['Horsepower']
+
+normalizer_horsepower = tf.keras.layers.Normalization(input_shape=[1,],axis=None) # Make a new normalizer for the horse
+normalizer_horsepower.adapt(horsepower)
+
+# Make the model. units are the number of nodes in a layer
+
+horsepower_model = tf.keras.Sequential([
+    normalizer_horsepower,
+    tf.keras.layers.Dense(units=1)
+])
+
+horsepower_model.summary() # Display the model contents
