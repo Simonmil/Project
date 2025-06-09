@@ -38,13 +38,12 @@ train_dataset = dataset.sample(frac=0.8, random_state=0)    # sample 80 % of the
 test_dataset = dataset.drop(train_dataset.index)            # create a dataset for testing by dropping the datapoints present in the training set. 
 
 # Inspect the data
-
-#print(train_dataset.describe().transpose())
-#sns.pairplot(train_dataset[['MPG', 'Cylinders', 'Displacement', 'Weight']], diag_kind='kde')
-#plt.show() # Required to see plots in Windows
-
+"""
+print(train_dataset.describe().transpose())
+sns.pairplot(train_dataset[['MPG', 'Cylinders', 'Displacement', 'Weight']], diag_kind='kde')
+plt.show() # Required to see plots in Windows
+"""
 # Splitting the label (target value) from the features
-
 # Make copies of the datasets that will contain the features
 train_features = train_dataset.copy()
 test_features = test_dataset.copy()
@@ -73,8 +72,9 @@ with np.printoptions(precision=2, suppress=True):
 # Single-variable linear regression
 horsepower = np.array(train_features['Horsepower'])
 #test_horsepower = test_features['Horsepower']
+#print(train_features['Horsepower'].shape)
 
-normalizer_horsepower = tf.keras.layers.Normalization(input_shape=[1,],axis=None) # Make a new normalizer for the horse
+normalizer_horsepower = tf.keras.layers.Normalization(input_shape=[1,],axis=None) # Make a new normalizer for the horsepower feature
 normalizer_horsepower.adapt(horsepower)
 
 # Make the model. units are the number of nodes in a layer
@@ -85,3 +85,63 @@ horsepower_model = tf.keras.Sequential([
 ])
 
 horsepower_model.summary() # Display the model contents
+#print(horsepower_model.predict(horsepower[:10]))
+
+# Configuring the training procedure. loss is the function to optimize, Adam is a stochastic gradient descent, and the learning rate is the size of the steps towards minimizing the loss function
+horsepower_model.compile(
+  optimizer=tf.keras.optimizers.Adam(learning_rate=0.1),
+  loss='mean_absolute_error'
+)
+
+# epochs are the number of times the fit procedure will run over the data. If the batch size is different than the length of the data, the model will be updated multiple times during one epoch.
+# validation split is the fraction of the training dataset that will be used to validate the data (this is not the same as providing test values)
+history = horsepower_model.fit(
+  train_features['Horsepower'],
+  train_labels,
+  epochs=100,
+  # suppress logging.
+  verbose=0,
+  # Calculate validate results on 20% of the training data
+  validation_split=0.2
+)
+
+
+# Put the statistics of the fit into a Pandas DataFrame. This is based on the fit to training and validation data.
+hist = pd.DataFrame(history.history)
+hist['epoch'] = history.epoch
+#print(hist.tail())
+
+def plot_loss(history):
+  # This function plots the loss of the fit
+  plt.plot(history.history['loss'], label='loss')
+  plt.plot(history.history['val_loss'], label='val_loss')
+  plt.ylim([0,10])
+  plt.xlabel('Epoch')
+  plt.ylabel('Error [MPG]')
+  plt.legend()
+  plt.grid(True)
+  plt.show()
+
+# Plot the loss
+#plot_loss(history)
+
+
+# Run evaluation for the fit by providing the test data
+test_result = {}      # Collect results for later
+test_result['horsepower_model'] = horsepower_model.evaluate(
+  test_features['Horsepower'],
+  test_labels
+)
+
+x = tf.linspace(0.0,250,251)
+y = horsepower_model.predict(x)
+
+def plot_horsepower(x,y):
+  plt.scatter(train_features['Horsepower'],train_labels,label='Data')
+  plt.plot(x,y,color='k',label='Predictions')
+  plt.xlabel('Horsepower')
+  plt.ylabel('MPG')
+  plt.legend()
+
+plot_horsepower(x,y)
+plt.show()
