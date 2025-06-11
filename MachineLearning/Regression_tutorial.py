@@ -77,7 +77,7 @@ horsepower = np.array(train_features['Horsepower'])
 normalizer_horsepower = tf.keras.layers.Normalization(input_shape=[1,],axis=None) # Make a new normalizer for the horsepower feature
 normalizer_horsepower.adapt(horsepower)
 
-# Make the model. units are the number of nodes in a layer
+# Make the model. units are the number of nodes in a layer. Here its 1, meaning there is only one weight to optimize representing the m in y=mx+b
 
 horsepower_model = tf.keras.Sequential([
     normalizer_horsepower,
@@ -111,24 +111,25 @@ hist = pd.DataFrame(history.history)
 hist['epoch'] = history.epoch
 #print(hist.tail())
 
-def plot_loss(history):
-  # This function plots the loss of the fit
-  plt.plot(history.history['loss'], label='loss')
-  plt.plot(history.history['val_loss'], label='val_loss')
+def plot_loss(history, modelname=''):
+  # This function plots the loss of the fit (the validation)
+  plt.plot(history.history['loss'], label='loss ' + modelname)
+  plt.plot(history.history['val_loss'], label='val_loss ' + modelname)
   plt.ylim([0,10])
   plt.xlabel('Epoch')
   plt.ylabel('Error [MPG]')
   plt.legend()
   plt.grid(True)
-  plt.show()
+  #plt.draw()
 
 # Plot the loss
-#plot_loss(history)
+plt.figure(1)
+plot_loss(history, 'horsepower')
 
 
 # Run evaluation for the fit by providing the test data
-test_result = {}      # Collect results for later
-test_result['horsepower_model'] = horsepower_model.evaluate(
+test_results = {}      # Collect results for later
+test_results['horsepower_model'] = horsepower_model.evaluate(
   test_features['Horsepower'],
   test_labels
 )
@@ -136,12 +137,139 @@ test_result['horsepower_model'] = horsepower_model.evaluate(
 x = tf.linspace(0.0,250,251)
 y = horsepower_model.predict(x)
 
-def plot_horsepower(x,y):
-  plt.scatter(train_features['Horsepower'],train_labels,label='Data')
-  plt.plot(x,y,color='k',label='Predictions')
+def plot_horsepower(x,y,modelname='',color='k'):
+  plt.plot(x,y,color=color,label='Predictions ' + modelname)
   plt.xlabel('Horsepower')
   plt.ylabel('MPG')
   plt.legend()
+  plt.draw()
 
+
+plt.figure(2)
+plt.scatter(train_features['Horsepower'],train_labels,label='Data')
 plot_horsepower(x,y)
+
+
+# Multivariate linear regression
+
+linear_model = tf.keras.Sequential([
+  normalizer, # Using the normalizer defined earlier
+  tf.keras.layers.Dense(units=1)
+])
+
+
+#print(linear_model.predict(train_features[:10]))
+#print(linear_model.layers[1].kernel)            # Here we check the kernel weights are of the right shape (9,1). This is the m  in y = mx + b
+
+
+linear_model.compile(
+  optimizer=tf.keras.optimizers.Adam(learning_rate=0.1),
+  loss='mean_absolute_error'
+)
+
+
+history = linear_model.fit(
+  train_features,
+  train_labels,
+  epochs=100,
+  # suppress logging.
+  verbose=0,
+  # Calculate validate results on 20% of the training data
+  validation_split=0.2
+)
+plt.figure(1)
+plot_loss(history, 'linear_model')
+
+
+test_results['linear_model'] = linear_model.evaluate(
+  test_features,
+  test_labels
+)
+
+####----------------------####
+# Regression with Deep Neural Network
+# Many of the previous stuff will be reused 
+
+
+def build_and_compile_model(norm):
+  model = tf.keras.Sequential([
+    norm,
+    tf.keras.layers.Dense(64, activation='relu'),
+    tf.keras.layers.Dense(64, activation='relu'),
+    tf.keras.layers.Dense(1) # One output layer as we only want 1 output
+  ])
+
+  model.compile(loss='mean_absolute_error', optimizer=tf.keras.optimizers.Adam(0.001))
+  return model
+
+
+
+# Single variable
+
+dnn_horsepower_model = build_and_compile_model(normalizer_horsepower)
+dnn_horsepower_model.summary()
+
+history = dnn_horsepower_model.fit(
+  train_features['Horsepower'],
+  train_labels,
+  validation_split=0.2,
+  verbose=0,
+  epochs=100
+)
+
+plt.figure(1)
+plot_loss(history, "horsepower_dnn")
+
+
+x = tf.linspace(0.0,250,251)
+y = dnn_horsepower_model.predict(x)
+
+plt.figure(2)
+plot_horsepower(x,y,'dnn','b')
+
+test_results['dnn_horsepower_model'] = dnn_horsepower_model.evaluate(test_features['Horsepower'],test_labels, verbose=0)
+
+
+# DNN with multiple features
+
+dnn_model = build_and_compile_model(normalizer)
+dnn_model.summary()
+
+history = dnn_model.fit(
+  train_features,
+  train_labels,
+  validation_split=0.2,
+  verbose=0,
+  epochs=100
+)
+
+plt.figure(1)
+plot_loss(history,'dnn_model')
+
+test_results['dnn_model'] = dnn_model.evaluate(test_features,test_labels,verbose=0)
+
+print(pd.DataFrame(test_results, index=['Mean absolute Error [MPG]']).T)
+
+
+
+# Make predictons
+
+test_predictions = dnn_model.predict(test_features).flatten() # Flatten to make the result one-dim
+
+plt.figure(3)
+a = plt.axes(aspect='equal')
+plt.scatter(test_labels,test_predictions)
+plt.xlabel('True values [MPG]')
+plt.ylabel('Predictions [MPG]')
+lims = [0,50]
+plt.xlim(lims)
+plt.ylim(lims)
+plt.plot(lims,lims)
+
+plt.figure(4)
+error = test_predictions - test_labels
+plt.hist(error, bins=25)
+plt.xlabel('Prediction Error [MPG]')
+plt.ylabel('Count')
 plt.show()
+
