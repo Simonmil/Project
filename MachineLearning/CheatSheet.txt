@@ -19,7 +19,7 @@ tf.keras.Sequential represents as sequence of steps Link: https://www.tensorflow
 
 
 
-Statitics:
+Statistics:
 
 
 
@@ -27,6 +27,8 @@ Statitics:
 Vizualization:
 
 Remember to use plt.show() in programs where plotting is a thing. This sends the plot to x-server.
+Use plt.figure(n) before a plotting call to set which figure to draw the plot. This is useful for drawing multiple results in the same plot.
+
 
 
 
