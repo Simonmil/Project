@@ -5,6 +5,8 @@ Dataset stuff
 
 Dataset manipulation:
 
+tf.data
+
 It is good practice to normalize features that use different scales and ranges.
 One reason this is important is because the features are multiplied by the model weights. 
 So, the scale of the outputs and the scale of the gradients are affected by the scale of the inputs.
