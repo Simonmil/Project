@@ -16,7 +16,7 @@ Models:
 
 tf.keras.Sequential represents as sequence of steps Link: https://www.tensorflow.org/guide/keras/sequential_model
 
-
+Use a softmax layer to convert linear outputs to probabilities for easier read.
 
 
 Statistics:
